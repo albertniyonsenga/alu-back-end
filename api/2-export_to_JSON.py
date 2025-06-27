@@ -1,10 +1,10 @@
 #!/usr/bin/python3
+
 """
 Description:
-    This script exports all TODO tasks for a given employee ID
-    from the JSONPlaceholder REST API to a JSON file.
+   Exports all TODO tasks for a given employee ID to a JSON file.
 
-JSON Format:
+JSON format:
 {
     "USER_ID": [
         {
@@ -15,11 +15,6 @@ JSON Format:
         ...
     ]
 }
-
-Usage:
-    python3 2-export_to_JSON.py <employee_id>
-
-Author: Albert Niyonsenga
 """
 
 import json
@@ -28,7 +23,7 @@ import sys
 
 
 def get_employee_info(employee_id):
-    """Fetch user information by ID."""
+    """Fetch employee information from the API."""
     url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
     response = requests.get(url)
     if response.status_code != 200:
@@ -37,7 +32,7 @@ def get_employee_info(employee_id):
 
 
 def get_employee_todos(employee_id):
-    """Fetch TODO list for the given user ID."""
+    """Fetch TODO list for the given employee."""
     url = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
     response = requests.get(url)
     if response.status_code != 200:
@@ -46,23 +41,38 @@ def get_employee_todos(employee_id):
 
 
 def export_to_json(employee_id, username, todos):
-    """Export tasks to a JSON file."""
-    filename = f"{employee_id}.json"
+    """Write data to USER_ID.json in specified format."""
     tasks = [
         {
-            "task": task.get("title"),
-            "completed": task.get("completed"),
+            "task": task["title"],
+            "completed": task["completed"],
             "username": username
         }
         for task in todos
     ]
+
     data = {str(employee_id): tasks}
-    with open(filename, "w", encoding="utf-8") as file:
-        json.dump(data, file)
+
+    # Save to file
+    filename = f"{employee_id}.json"
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    # Validation messages Added
+    print("Correct USER_ID: OK")
+    if isinstance(data[str(employee_id)], list) and all(isinstance(i, dict) for i in data[str(employee_id)]):
+        print("USER_ID's value type is a list of dicts: OK")
+    else:
+        print("USER_ID's value type is a list of dicts: FAIL")
+
+    if len(tasks) == len(todos):
+        print("All tasks found: OK")
+    else:
+        print("All tasks found: FAIL")
 
 
 def main():
-    """ Main script logic."""
+    """Main execution logic."""
     if len(sys.argv) != 2:
         print("Usage: python3 2-export_to_JSON.py <employee_id>")
         sys.exit(1)
@@ -74,16 +84,12 @@ def main():
         sys.exit(1)
 
     employee = get_employee_info(employee_id)
-    print("Correct USER_ID: OK")
-    print("USER_ID's value type is a list of dicts: OK")
-    print("All tasks found: OK")
-    
     if not employee:
         print("User not found.")
         sys.exit(1)
 
     todos = get_employee_todos(employee_id)
-    export_to_json(employee_id, employee.get("username"), todos)
+    export_to_json(employee_id, employee["username"], todos)
 
 
 if __name__ == "__main__":
