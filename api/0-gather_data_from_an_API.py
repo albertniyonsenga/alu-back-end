@@ -69,7 +69,12 @@ def display_todo_progress(employee_name, todos):
     done_tasks = [task for task in todos if task.get("completed")]
     num_done = len(done_tasks)
 
-    print(f"Employee {employee_name} is done with tasks({num_done}/{total_tasks}):")
+    header = (
+        f"Employee {employee_name} is done with tasks"
+        f"({num_done}/{total_tasks}):"
+    )
+    print(header)
+
     for task in done_tasks:
         print("\t {}".format(task.get("title")))
 
