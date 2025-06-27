@@ -1,13 +1,9 @@
 #!/usr/bin/python3
 
 """
-Module: 0-gather_data_from_an_API
-
-This script uses a public REST API (https://jsonplaceholder.typicode.com)
-to retrieve the TODO list progress of a given employee by ID.
-
-It prints the employee's name, the number of completed tasks out of the total,
-and lists all completed task titles.
+Description:
+    This script fetches and displays the TODO list progress of a given employee
+    using the JSONPlaceholder REST API.
 
 Usage:
     python3 0-gather_data_from_an_API.py <employee_id>
@@ -15,9 +11,10 @@ Usage:
 Example:
     python3 0-gather_data_from_an_API.py 2
 
-Dependencies:
-    - requests
-    - sys
+The script prints:
+    - The employee’s name
+    - The number of completed tasks out of the total tasks
+    - The titles of completed tasks (each prefixed by a tab and space)
 
 Author: Albert Niyonsenga
 """
@@ -28,17 +25,16 @@ import sys
 
 def get_employee_info(employee_id):
     """
-    Fetch employee information using the provided employee ID.
+    Fetch employee information from the API.
 
     Args:
         employee_id (int): The ID of the employee.
 
     Returns:
-        dict: JSON object with employee information (e.g., name, username).
+        dict or None: Employee data as a dictionary or None if not found.
     """
-    user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-    response = requests.get(user_url)
-
+    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+    response = requests.get(url)
     if response.status_code != 200:
         return None
     return response.json()
@@ -46,17 +42,16 @@ def get_employee_info(employee_id):
 
 def get_employee_todos(employee_id):
     """
-    Fetch TODO list for a given employee.
+    Fetch all TODO tasks associated with an employee.
 
     Args:
         employee_id (int): The ID of the employee.
 
     Returns:
-        list: List of task dictionaries.
+        list: List of dictionaries representing tasks.
     """
-    todos_url = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
-    response = requests.get(todos_url)
-
+    url = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
+    response = requests.get(url)
     if response.status_code != 200:
         return []
     return response.json()
@@ -64,11 +59,11 @@ def get_employee_todos(employee_id):
 
 def display_todo_progress(employee_name, todos):
     """
-    Display the TODO list progress for an employee.
+    Display TODO task progress for the given employee.
 
     Args:
-        employee_name (str): Name of the employee.
-        todos (list): List of task dictionaries.
+        employee_name (str): The full name of the employee.
+        todos (list): A list of task dictionaries.
     """
     total_tasks = len(todos)
     done_tasks = [task for task in todos if task.get("completed")]
@@ -79,20 +74,29 @@ def display_todo_progress(employee_name, todos):
         print("\t {}".format(task.get("title")))
 
 
-if __name__ == "__main__":
-    # Ensure a valid employee ID is provided via command-line argument
-    try:
-        employee_id = int(sys.argv[1])
-    except (IndexError, ValueError):
+def main():
+    """
+    Entry point for the script.
+    Parses command-line input and coordinates data fetching and display.
+    """
+    if len(sys.argv) != 2:
         print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
         sys.exit(1)
 
-    # Fetch employee info
+    try:
+        employee_id = int(sys.argv[1])
+    except ValueError:
+        print("Error: Employee ID must be an integer.")
+        sys.exit(1)
+
     employee = get_employee_info(employee_id)
     if not employee:
         print("User not found.")
         sys.exit(1)
 
-    # Fetch and display their TODO list progress
     todos = get_employee_todos(employee_id)
     display_todo_progress(employee.get("name"), todos)
+
+
+if __name__ == "__main__":
+    main()
